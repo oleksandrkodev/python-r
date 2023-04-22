@@ -1,3 +1,5 @@
+install.packages('plyr', repos = "http://cran.us.r-project.org")
+
 if (!require("devtools")){
     install.packages("devtools")
 }

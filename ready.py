@@ -42,6 +42,5 @@ Y = T * Y1
 synthetic_dataset = np.column_stack((X, T, Y))
 column_names = [f"X{i}" for i in range(1, d + 1)] + ["T", "Y"]
 df = pd.DataFrame(synthetic_dataset, columns=column_names)
-df.to_csv("1.csv", index=False)
-df.head()
-df.to_csv("2.csv", index=False)
+# df.to_csv("asset`s/1.csv", index=False)
+print(df.head())
