@@ -72,14 +72,16 @@ df = pd.DataFrame(synthetic_dataset, columns=column_names)
 # df.to_csv("asset`s/1.csv", index=False)
 # print(df.head())
 
-
 quantiles = np.array([0.05, 0.95])
+Xtest = np.random.normal(size=(n, d))
 
 nr, nc = X.shape
 X_r = robjects.r.matrix(X, nrow=nr, ncol=nc)
 Y_r = robjects.FloatVector(Y)
 T_r = robjects.IntVector(T)
 quantiles_r = robjects.FloatVector(quantiles)
+nr, nc = Xtest.shape
+Xtest_r = robjects.r.matrix(Xtest, nrow=nr, ncol=nc)
 
 # register variables into r
 # robjects.r.assign("X", X_r)
@@ -87,7 +89,9 @@ quantiles_r = robjects.FloatVector(quantiles)
 # robjects.r.assign("T", T_r)
 # robjects.r.assign("quantiles", quantiles_r)
 
-CIfun = cfcausal.conformalIte(
+
+# Inexact nested method
+I_CIfun = cfcausal.conformalIte(
     X_r,  # robjects.r["X"],
     Y_r,  # robjects.r["Y"],
     T_r,  # robjects.r["T"],
@@ -99,14 +103,38 @@ CIfun = cfcausal.conformalIte(
     outfun="quantRF",
     useCV=False,
 )
-
-# print(x)
-
-Xtest = np.random.normal(size=(n, d))
-# print(pd.DataFrame(Xtest))
-
-nr, nc = Xtest.shape
-Xtest_r = robjects.r.matrix(Xtest, nrow=nr, ncol=nc)
+inexact_nested = I_CIfun(Xtest_r)  # robjects.r["X"]
+print(inexact_nested)
 
 
-nd = CIfun(Xtest_r)  # robjects.r["X"]
+# Exact nested method
+E_CIfun = cfcausal.conformalIte(
+    X_r,  # robjects.r["X"],
+    Y_r,  # robjects.r["Y"],
+    T_r,  # robjects.r["T"],
+    alpha=0.1,
+    algo="nest",
+    exact=True,
+    type="CQR",
+    quantiles=quantiles_r,  # robjects.r["quantiles"],
+    outfun="quantRF",
+    useCV=False,
+)
+exact_nested = E_CIfun(Xtest_r)
+print(exact_nested)
+
+
+# Naive method
+N_CIfun = cfcausal.conformalIte(
+    X_r,  # robjects.r["X"],
+    Y_r,  # robjects.r["Y"],
+    T_r,  # robjects.r["T"],
+    alpha=0.1,
+    algo="naive",
+    type="CQR",
+    quantiles=quantiles_r,  # robjects.r["quantiles"],
+    outfun="quantRF",
+    useCV=False,
+)
+naive = N_CIfun(Xtest_r)
+print(naive)
