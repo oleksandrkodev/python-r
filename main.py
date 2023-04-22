@@ -10,15 +10,15 @@ from rpy2.robjects.vectors import StrVector
 # Load the numpy2ri module
 numpy2ri.activate()
 
-
 # import R's "base" package
-base = importr("base")
+# base = importr("base")
 
 # import R's "utils" package
 utils = importr("utils")
 
 # R package names
-packnames = ("ggplot2", "hexbin")
+# packnames = ("ggplot2", "hexbin")
+packnames = ""
 
 # Selectively install what needs to be install.
 # We are fancy, just because we can.
@@ -28,7 +28,6 @@ if len(names_to_install) > 0:
 
 # import R's cfcausal package
 cfcausal = importr("cfcausal")
-
 
 # np.random.seed(2000)
 
@@ -78,40 +77,36 @@ quantiles = np.array([0.05, 0.95])
 
 nr, nc = X.shape
 X_r = robjects.r.matrix(X, nrow=nr, ncol=nc)
-print(type(Y))
-
-# nr,nc = Y.shape
-Y_r = robjects.r.matrix(Y, nrow=nr, ncol=nc)
-
-# nr,nc = T.shape
-T_r = robjects.r.matrix(T, nrow=nr, ncol=nc)
-
-# nr,nc = T.shape
-quantiles_r = robjects.r.matrix(quantiles, nrow=nr, ncol=nc)
-
-Y_r = robjects.IntVector(Y)
+Y_r = robjects.FloatVector(Y)
 T_r = robjects.IntVector(T)
+quantiles_r = robjects.FloatVector(quantiles)
 
-robjects.r.assign("X", X_r)
-robjects.r.assign("Y", Y_r)
-robjects.r.assign("T", T_r)
-robjects.r.assign("quantiles", quantiles_r)
+# register variables into r
+# robjects.r.assign("X", X_r)
+# robjects.r.assign("Y", Y_r)
+# robjects.r.assign("T", T_r)
+# robjects.r.assign("quantiles", quantiles_r)
 
-
-x = cfcausal.conformalIte(
-    robjects.r["Y"],
-    robjects.r["Y"],
-    robjects.r["T"],
+CIfun = cfcausal.conformalIte(
+    X_r,  # robjects.r["X"],
+    Y_r,  # robjects.r["Y"],
+    T_r,  # robjects.r["T"],
     alpha=0.1,
     algo="nest",
     exact=False,
     type="CQR",
-    quantiles=robjects.r["quantiles"],
+    quantiles=quantiles_r,  # robjects.r["quantiles"],
     outfun="quantRF",
     useCV=False,
 )
 
 # print(x)
 
-p = x(robjects.r["X"])
-print(type(p))
+Xtest = np.random.normal(size=(n, d))
+# print(pd.DataFrame(Xtest))
+
+nr, nc = Xtest.shape
+Xtest_r = robjects.r.matrix(Xtest, nrow=nr, ncol=nc)
+
+
+nd = CIfun(Xtest_r)  # robjects.r["X"]
