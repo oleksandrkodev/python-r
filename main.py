@@ -74,6 +74,7 @@ df = pd.DataFrame(synthetic_dataset, columns=column_names)
 
 quantiles = np.array([0.05, 0.95])
 Xtest = np.random.normal(size=(n, d))
+Ytest = np.random.normal(size=(n,))
 
 nr, nc = X.shape
 X_r = robjects.r.matrix(X, nrow=nr, ncol=nc)
@@ -103,8 +104,8 @@ I_CIfun = cfcausal.conformalIte(
     outfun="quantRF",
     useCV=False,
 )
-inexact_nested = I_CIfun(Xtest_r)  # robjects.r["X"]
-print(inexact_nested)
+inexact_nested_bounds = I_CIfun(Xtest_r)  # robjects.r["X"]
+print(inexact_nested_bounds)
 
 
 # Exact nested method
@@ -120,8 +121,8 @@ E_CIfun = cfcausal.conformalIte(
     outfun="quantRF",
     useCV=False,
 )
-exact_nested = E_CIfun(Xtest_r)
-print(exact_nested)
+exact_nested_bounds = E_CIfun(Xtest_r)
+print(exact_nested_bounds)
 
 
 # Naive method
@@ -136,5 +137,9 @@ N_CIfun = cfcausal.conformalIte(
     outfun="quantRF",
     useCV=False,
 )
-naive = N_CIfun(Xtest_r)
-print(naive)
+naive_bounds = N_CIfun(Xtest_r)
+print(naive_bounds)
+
+covered = (Ytest >= inexact_nested_bounds[0]) & (Ytest <= inexact_nested_bounds[1])
+conditional_coverage = np.mean(covered)
+inexact_nested_width = np.mean(inexact_nested_bounds[1] - inexact_nested_bounds[0])
