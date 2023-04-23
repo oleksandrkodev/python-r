@@ -140,6 +140,16 @@ N_CIfun = cfcausal.conformalIte(
 naive_bounds = N_CIfun(Xtest_r)
 print(naive_bounds)
 
-covered = (Ytest >= inexact_nested_bounds[0]) & (Ytest <= inexact_nested_bounds[1])
-conditional_coverage = np.mean(covered)
+inexact_covered = (Ytest >= inexact_nested_bounds[0]) & (
+    Ytest <= inexact_nested_bounds[1]
+)
+inexact_conditional_coverage = np.mean(inexact_covered)
 inexact_nested_width = np.mean(inexact_nested_bounds[1] - inexact_nested_bounds[0])
+
+exact_covered = (Ytest >= exact_nested_bounds[0]) & (Ytest <= exact_nested_bounds[1])
+exact_conditional_coverage = np.mean(exact_covered)
+exact_nested_width = np.mean(exact_nested_bounds[1] - exact_nested_bounds[0])
+
+naive_covered = (Ytest >= naive_bounds[0]) & (Ytest <= naive_bounds[1])
+naive_conditional_coverage = np.mean(naive_covered)
+naive_width = np.mean(naive_bounds[1] - naive_bounds[0])
